@@ -1,0 +1,5 @@
+#!/bin/bash
+
+. `which virtualenvwrapper_lazy.sh`
+workon skicam
+sudo `which ipython`

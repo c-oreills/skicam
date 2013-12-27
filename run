@@ -1,0 +1,6 @@
+#!/bin/bash
+
+cd `dirname $0`
+. `which virtualenvwrapper_lazy.sh`
+workon skicam
+sudo `which python` -c 'import main; main.run_daemon()'
