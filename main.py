@@ -1,7 +1,8 @@
-import subprocess
 from time import sleep, time
 
 from RPi import GPIO
+
+from capture import pic, vid
 
 GPIO.setmode(GPIO.BOARD)
 GPIO.setup(3, GPIO.IN)
@@ -13,31 +14,30 @@ TOGGLE_REPEAT_POLL = 0.01
 DEBUG = True
 
 
-def pic():
-    print 'pic'
-    subprocess.call(['raspistill', '-o', 'DCIM/img.jpg', '-t', '100'])
+def skip_track():
+    pass
+
+def play_pause():
+    pass
 
 def start_video():
-    print 'start vid'
-    pass
+    vid_p = vid()
+    orig_toggle_1 = TOGGLE_FNS[1]
 
-def stop_video():
-    print 'stop vid'
-    pass
-
-def kill_flask():
-    print 'kill flask'
-    pass
+    def stop_video():
+        vid_p.terminate()
+        TOGGLE_FNS[1] = orig_toggle_1
+    TOGGLE_FNS[1] = stop_video
 
 def start_flask():
-    print 'start flask'
     pass
 
 
 TOGGLE_FNS = {
     1: pic,
-    3: start_video,
-    4: kill_flask,
+    2: skip_track,
+    3: play_pause,
+    4: start_video,
     5: start_flask,
 }
 
@@ -57,9 +57,12 @@ def poll_toggles():
     while True:
         t = time()
         if toggle_count and t - last_toggle_time > TOGGLE_TIMEOUT:
-            toggle_fn = TOGGLE_FNS.get(toggle_count)
-            if toggle_fn:
-                toggle_fn()
+            print 'diff', t - last_toggle_time
+            # We exec fn 1 instantaneously, so don't exec after timeout
+            if toggle_count > 1:
+                toggle_fn = TOGGLE_FNS.get(toggle_count)
+                if toggle_fn:
+                    toggle_fn()
             if DEBUG:
                 print 'Toggled', toggle_count, 'times'
             toggle_count = 0
@@ -86,3 +89,7 @@ def run_daemon():
     import daemon
     with daemon.DaemonContext():
         run()
+
+
+if __name__ == '__main__':
+    run_daemon()

@@ -1,0 +1,9 @@
+<!doctype html>
+<title>skicam</title>
+<p>{{ disk_stats.0 }} / {{ disk_stats.1 }}</p>
+{% if pic %}
+    <img src='/{{ pic }}' style='max-width: 100%' />
+{% endif %}
+{% for pic, thumb in thumbs.iteritems() %}
+    <a href='{{ pic }}'><img src='{{ thumb }}' /></a>
+{% endfor %}
