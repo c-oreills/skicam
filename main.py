@@ -2,7 +2,7 @@ from time import sleep, time
 
 from RPi import GPIO
 
-from capture import pic, vid
+from menus import exec_menu_option
 
 GPIO.setmode(GPIO.BOARD)
 GPIO.setup(3, GPIO.IN)
@@ -12,34 +12,6 @@ TOGGLE_POLL = 0.05
 TOGGLE_REPEAT_POLL = 0.01
 
 DEBUG = True
-
-
-def skip_track():
-    pass
-
-def play_pause():
-    pass
-
-def start_video():
-    vid_p = vid()
-    orig_toggle_1 = TOGGLE_FNS[1]
-
-    def stop_video():
-        vid_p.terminate()
-        TOGGLE_FNS[1] = orig_toggle_1
-    TOGGLE_FNS[1] = stop_video
-
-def start_flask():
-    pass
-
-
-TOGGLE_FNS = {
-    1: pic,
-    2: skip_track,
-    3: play_pause,
-    4: start_video,
-    5: start_flask,
-}
 
 
 def read_input():
@@ -57,12 +29,7 @@ def poll_toggles():
     while True:
         t = time()
         if toggle_count and t - last_toggle_time > TOGGLE_TIMEOUT:
-            print 'diff', t - last_toggle_time
-            # We exec fn 1 instantaneously, so don't exec after timeout
-            if toggle_count > 1:
-                toggle_fn = TOGGLE_FNS.get(toggle_count)
-                if toggle_fn:
-                    toggle_fn()
+            exec_menu_option(toggle_count)
             if DEBUG:
                 print 'Toggled', toggle_count, 'times'
             toggle_count = 0
@@ -75,9 +42,8 @@ def poll_toggles():
         last_val = val
 
         toggle_count += 1
-        # Always trigger first toggle
-        if toggle_count == 1:
-            TOGGLE_FNS[1]()
+        # Trigger the first option instantly if it's set to eager
+        exec_menu_option(toggle_count, eager=True)
 
         last_toggle_time = time()
         poll_sleep()
