@@ -1,0 +1,17 @@
+<!doctype html>
+<title>skicam</title>
+<form method='POST'>
+    {% for k, vs in options.iteritems() %}
+        <h2>{{ k }}</h2>
+        <input type='radio' name='{{k}}' id='{{k}}-' value='' {% if config.get(k,'') == '' %}checked='checked'{% endif %}>
+        <label for='{{k}}-'>None</label>
+        <br />
+        {% for v, v_desc in vs.iteritems() %}
+        <input type='radio' name='{{k}}' id='{{k}}-{{v}}' value='{{v}}' {% if config.get(k, '') == v %}checked='checked'{% endif %}>
+        <label for='{{k}}-{{v}}'>{{ v }} - {{ v_desc }}</label>
+        <br />
+        {% endfor %}
+    {% endfor %}
+    <br />
+    <input type='submit'>
+</form>

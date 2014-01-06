@@ -4,6 +4,7 @@ eventlet.monkey_patch()
 from flask import Flask, redirect, render_template, request_started, url_for
 from flask.ext.cache import Cache
 
+from camconfig import config_view
 from pics import last_pics, pic_thumbnails_b64
 from timeout import (reset_timeout, turn_on_wifi, terminate, init_timeout,
         disable_timeout)
@@ -21,13 +22,13 @@ def index():
     return render_template(
             'index.html', pic=pic, thumbs=thumbs, disk_stats=disk_stats)
 
-@app.route('/pic_config')
+@app.route('/pic_config', methods=('GET', 'POST'))
 def pic_config():
-    pass
+    return config_view('pic')
 
-@app.route('/vid_config')
+@app.route('/vid_config', methods=('GET', 'POST'))
 def vid_config():
-    pass
+    return config_view('vid')
 
 @app.route('/kill')
 def kill():
