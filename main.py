@@ -1,8 +1,10 @@
+from os import chdir
 from time import sleep, time
 
 from RPi import GPIO
 
 from menus import exec_menu_option
+from web.camconfig import reload_config, register_signal_handlers
 
 GPIO.setmode(GPIO.BOARD)
 GPIO.setup(3, GPIO.IN)
@@ -49,11 +51,15 @@ def poll_toggles():
         poll_sleep()
 
 def run():
+    chdir('/home/pi/skicam')
+    reload_config()
+    register_signal_handlers()
     poll_toggles()
 
 def run_daemon():
     import daemon
-    with daemon.DaemonContext():
+    logfile = open('/home/pi/skicam/ski.log', 'a+')
+    with daemon.DaemonContext(stdout=logfile, stderr=logfile):
         run()
 
 

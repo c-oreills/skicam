@@ -1,6 +1,8 @@
 from glob import glob
 import subprocess
 
+from web.camconfig import current_confs
+
 last_pic_proc = None
 
 def _wait_on_last_pic():
@@ -11,11 +13,14 @@ def pic():
     global last_pic_proc
     _wait_on_last_pic()
     last_pic_proc = subprocess.Popen(
-            ['raspistill', '-o', 'DCIM/{n:05}.jpg'.format(n=next_pic_n()), '-t', '0'])
+            ['raspistill', '-o', 'DCIM/{n:05}.jpg'.format(n=next_pic_n()),
+                '-t', '10'] + current_confs['pic'])
 
 def vid():
     _wait_on_last_pic()
-    return subprocess.Popen(['raspivid', '-o', 'DCIM/{n:05}.h264'.format(n=next_pic_n()), '-t', '99999999'])
+    return subprocess.Popen(
+            ['raspivid', '-o', 'DCIM/{n:05}.h264'.format(n=next_pic_n()),
+                '-t', '99999999'] + current_confs['vid'])
 
 
 def _last_pic_n(ext='jpg'):

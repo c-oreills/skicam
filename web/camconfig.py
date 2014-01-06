@@ -1,13 +1,8 @@
-from itertools import izip_longest
+from itertools import chain
+import json
+from os import kill
+import signal
 
-from flask import request, render_template, redirect
-
-
-BASE_CMD_PIC = """#!/bin/bash
-raspistill -o DCIM/$1.jpg -t 0 -rot 180"""
-
-BASE_CMD_VID = """#!/bin/bash
-raspivid -o DCIM/$1.h264 -t 99999999 -rot 180"""
 
 OPTIONS = {
     '--exposure': {
@@ -26,55 +21,64 @@ OPTIONS = {
     }
 }
 
-BASE_CMDS = {
-    'pic': BASE_CMD_PIC,
-    'vid': BASE_CMD_VID
+CONF_FILES = {
+    'pic': '/home/pi/skicam/pic.conf',
+    'vid': '/home/pi/skicam/vid.conf'
 }
 
-CMD_FILES = {
-    'pic': '../run_raspistill',
-    'vid': '../run_raspivid'
-}
+current_confs = {'pic': [], 'vid': []}
+
+parent = None
+
+def set_parent(p):
+    global parent
+    parent = int(p)
 
 
-def grouper(iterable, n, fillvalue=None):
-    "Collect data into fixed-length chunks or blocks"
-    # grouper('ABCDEFG', 3, 'x') --> ABC DEF Gxx
-    args = [iter(iterable)] * n
-    return izip_longest(fillvalue=fillvalue, *args)
-
-
-def generate_cmd(type, config):
-    cmd = BASE_CMDS[type]
+def generate_conf(type, config):
+    conf = {}
     for k, v in config.iteritems():
         if v in OPTIONS.get(k, {}):
-            cmd += ' ' + k + ' '  + v
-    return cmd
+            conf[k] = v
+    return conf
 
-def write_cmd(type, cmd):
-    open(CMD_FILES[type], 'w').write(cmd)
+def write_conf(type, conf):
+    open(CONF_FILES[type], 'w').write(json.dumps(conf))
+    if parent:
+        kill(parent, signal.SIGUSR1)
 
-def read_cmd(type):
+def read_conf(type):
     try:
-        cmd = open(CMD_FILES[type], 'r').read()
-    except IOError:
+        return json.loads(open(CONF_FILES[type], 'r').read())
+    except (IOError, ValueError) as e:
+        print 'Could not read', type, 'config file'
+        print e
         return {}
-
-    # Strip off base and leading space
-    cmd = cmd[len(BASE_CMDS[type]) + 1:]
-
-    if not cmd:
-        return {}
-
-    cmd = cmd.split()
-    config = {k: v for k, v in grouper(cmd, 2) if k in OPTIONS}
-    return config
 
 def config_view(type):
+    from flask import request, render_template, redirect
+
     assert type in ('pic', 'vid')
     if request.method == 'POST':
-        cmd = generate_cmd(type, request.form)
-        write_cmd(type, cmd)
+        conf = generate_conf(type, request.form)
+        write_conf(type, conf)
         return redirect(request.path)
-    config = read_cmd(type)
+    config = read_conf(type)
     return render_template('camconfig.html', config=config, options=OPTIONS)
+
+def reload_config():
+    print 'Reloading config'
+    for type in ('pic', 'vid'):
+        conf = read_conf(type)
+        current_confs[type] = list(chain(*conf.iteritems()))
+
+def register_signal_handlers():
+    signal.signal(signal.SIGUSR1, lambda *a: reload_config())
+
+if __name__ == '__main__':
+    for type in 'pic', 'vid':
+        if read_conf(type):
+            continue
+        print 'Generating base', type, 'config'
+        conf = generate_conf(type, {})
+        write_conf(type, conf)

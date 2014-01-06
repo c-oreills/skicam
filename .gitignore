@@ -1,2 +1,5 @@
 *.pyc
 *.sw[pn]
+ski.log
+pic.conf
+vid.conf

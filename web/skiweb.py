@@ -1,10 +1,12 @@
 import eventlet
 eventlet.monkey_patch()
 
+from sys import argv
+
 from flask import Flask, redirect, render_template, request_started, url_for
 from flask.ext.cache import Cache
 
-from camconfig import config_view
+from camconfig import config_view, set_parent
 from pics import last_pics, pic_thumbnails_b64
 from timeout import (reset_timeout, turn_on_wifi, terminate, init_timeout,
         disable_timeout)
@@ -44,7 +46,13 @@ def reset_timeout_handler(s, **k):
     reset_timeout()
 request_started.connect(reset_timeout_handler, app)
 
+def register_parent():
+    if len(argv) > 1:
+        parent = argv[1]
+    set_parent(parent)
+
 if __name__ == '__main__':
     turn_on_wifi()
     init_timeout()
+    register_parent()
     app.run(host='0.0.0.0', port=80, debug=True)

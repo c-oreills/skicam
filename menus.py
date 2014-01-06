@@ -1,4 +1,6 @@
+from os import getpid
 import subprocess
+
 from capture import pic, vid
 
 
@@ -21,7 +23,7 @@ def start_flask():
 
     flask_p = subprocess.Popen(
             ['/home/pi/.virtualenvs/skicam/bin/python',
-                '/home/pi/skicam/web/skiweb.py'],
+                '/home/pi/skicam/web/skiweb.py', str(getpid())],
             cwd='/home/pi/skicam/web/')
 
 CAPTURE_MENU = {
