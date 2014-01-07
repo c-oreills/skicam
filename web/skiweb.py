@@ -35,6 +35,7 @@ def vid_config():
 @app.route('/kill')
 def kill():
     terminate()
+    return redirect(url_for('index'))
 
 @app.route('/no_timeout')
 def no_timeout():

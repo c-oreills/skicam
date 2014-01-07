@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta
+from httplib import HTTPException
 import subprocess
 from time import sleep
+from urllib2 import urlopen
 
 from eventlet import spawn_after
 
@@ -34,7 +36,13 @@ def check_timeout():
         spawn_after(secs_left, check_timeout)
         return
 
-    terminate()
+    send_kill_request()
+
+def send_kill_request():
+    try:
+        urlopen('http://localhost/kill')
+    except HTTPException:
+        print 'Caught exception hitting kill endpoint, continuing'
 
 def terminate():
     #turn_off_wifi()
