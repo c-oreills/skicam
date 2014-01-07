@@ -49,7 +49,7 @@ request_started.connect(reset_timeout_handler, app)
 def register_parent():
     if len(argv) > 1:
         parent = argv[1]
-    set_parent(parent)
+        set_parent(parent)
 
 if __name__ == '__main__':
     turn_on_wifi()
