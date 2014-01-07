@@ -55,13 +55,3 @@ def run():
     reload_config()
     register_signal_handlers()
     poll_toggles()
-
-def run_daemon():
-    import daemon
-    logfile = open('/home/pi/skicam/ski.log', 'a+')
-    with daemon.DaemonContext(stdout=logfile, stderr=logfile):
-        run()
-
-
-if __name__ == '__main__':
-    run_daemon()

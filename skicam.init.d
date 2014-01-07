@@ -7,7 +7,8 @@ PATH=/sbin:/usr/sbin:/bin:/usr/bin:/usr/local/bin
 DESC="Ski camera"
 NAME=skicam
 DAEMON="/home/pi/.virtualenvs/skicam/bin/python"
-DAEMON_ARGS="/home/pi/skicam/main.py"
+DIR="/home/pi/skicam"
+DAEMON_ARGS="$DIR/run_daemon.py"
 PIDFILE=/var/run/$NAME.pid
 SCRIPTNAME=/etc/init.d/$NAME
 export WORKON_HOME=/home/pi/.virtualenvs
@@ -35,9 +36,9 @@ do_start()
 	#   0 if daemon has been started
 	#   1 if daemon was already running
 	#   2 if daemon could not be started
-	start-stop-daemon --start --quiet --pidfile $PIDFILE --exec $DAEMON --test > /dev/null \
+	start-stop-daemon --start --quiet --pidfile $PIDFILE --chdir $DIR --exec $DAEMON --test > /dev/null \
 		|| return 1
-	start-stop-daemon --start --quiet --pidfile $PIDFILE --exec $DAEMON $DAEMON_ARGS \
+	start-stop-daemon --start --quiet --pidfile $PIDFILE --chdir $DIR --exec $DAEMON $DAEMON_ARGS \
 		|| return 2
 	# Add code here, if necessary, that waits for the process to be ready
 	# to handle requests from services started subsequently which depend
