@@ -35,6 +35,19 @@ def start_flask():
             cwd='/home/pi/skicam/web/')
     play_sound('poweron')
 
+SPEAK_IP_CMD = '''
+ifconfig wlan0 |
+grep -o "inet addr:[[:digit:]]\{1,3\}.[[:digit:]]\{1,3\}.[[:digit:]]\{1,3\}.[[:digit:]]\{1,3\}"
+| espeak'''
+
+def speak_ip():
+    subprocess.Popen(SPEAK_IP_CMD, shell=True)
+
+SPEAK_LAST_CAPTURE_CMD = 'ls DCIM -t | head -n 1 | espeak'
+
+def speak_last_capture():
+    subprocess.Popen(SPEAK_LAST_CAPTURE_CMD, shell=True)
+
 CAPTURE_MENU = {
     'name': 'capture',
     'sound': 'computerbeep2',
@@ -42,6 +55,9 @@ CAPTURE_MENU = {
     2: start_video,
     3: lambda: switch_menu(MUSIC_MENU),
     4: start_flask,
+    5: speak_ip,
+    6: speak_last_capture,
+    7: lambda: switch_menu(SHUTDOWN_MENU),
     'eager_first': True,
 }
 
@@ -59,6 +75,18 @@ MUSIC_MENU = {
     2: play_pause,
     3: lambda: switch_menu(CAPTURE_MENU),
     4: start_flask,
+}
+
+
+def shutdown():
+    play_sound('shutdowninprocess')
+    subprocess.Popen(['halt'])
+
+SHUTDOWN_MENU = {
+    'name': 'shutdown',
+    'sound': 'shutdowninprocess',
+    'default': lambda: switch_menu(CAPTURE_MENU),
+    3: shutdown,
 }
 
 
