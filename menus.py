@@ -47,10 +47,10 @@ CAPTURE_MENU = {
 
 
 def skip_track():
-    pass
+    subprocess.Popen(['mpc', 'next'])
 
 def play_pause():
-    pass
+    subprocess.Popen(['mpc', 'toggle'])
 
 MUSIC_MENU = {
     'name': 'music',
