@@ -65,6 +65,9 @@ def exec_menu_option(n, eager=False):
         else:
             if n == 1:
                 return
+    # Otherwise disregard eager calls
+    elif eager:
+        return
 
     fn = current_menu.get(n) or current_menu.get('default')
     if fn:
