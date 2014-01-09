@@ -4,6 +4,7 @@ from time import sleep, time
 from RPi import GPIO
 
 from menus import exec_menu_option, play_sound
+import pulser
 from web.camconfig import reload_config, register_signal_handlers
 
 GPIO.setmode(GPIO.BOARD)
@@ -38,6 +39,11 @@ def poll_toggles():
 
         val = read_input()
         if val == last_val:
+            if pulser.pulse_polls:
+                pulser.poll_count += 1
+                if pulser.poll_count > pulser.pulse_polls:
+                    pulser.pulse_fn()
+                    pulser.poll_count = 0
             poll_sleep()
             continue
 

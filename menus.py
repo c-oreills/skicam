@@ -2,6 +2,7 @@ from os import getpid
 import subprocess
 
 import capture
+import pulser
 import utils
 
 
@@ -30,9 +31,11 @@ def pic():
 def start_video():
     vid_p = capture.vid()
     play_sound('whizfst2')
+    pulser.set_pulse(30, lambda: play_sound('whizfst2'))
 
     def stop_video():
         vid_p.terminate()
+        pulser.unset_pulse()
         switch_menu(MAIN_MENU)
 
     switch_menu({'name': 'stop_vid', 'default': stop_video})
