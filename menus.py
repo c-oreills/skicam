@@ -1,23 +1,39 @@
 from os import getpid
 import subprocess
 
-from capture import pic, vid
+import capture
+import utils
+
+
+def create_dialog(fn2, kwargs):
+    def dialog():
+        prompt = kwargs.pop('prompt', None)
+        if prompt:
+            prompt()
+        prev_menu = current_menu
+        dialog_menu = {
+                2: fn2,
+                'name': fn2.func_name,
+                'default':  lambda: switch_menu(prev_menu)}
+        dialog_menu.update(kwargs)
+        switch_menu(dialog_menu)
+    return dialog
 
 
 def play_sound(name):
     subprocess.Popen(['aplay', 'sounds/{n}.wav'.format(n=name)])
 
-def capture_pic():
-    pic()
+def pic():
+    capture.pic()
     play_sound('camera')
 
 def start_video():
-    vid_p = vid()
+    vid_p = capture.vid()
     play_sound('whizfst2')
 
     def stop_video():
         vid_p.terminate()
-        switch_menu(CAPTURE_MENU)
+        switch_menu(MAIN_MENU)
 
     switch_menu({'name': 'stop_vid', 'default': stop_video})
 
@@ -35,62 +51,91 @@ def start_flask():
             cwd='/home/pi/skicam/web/')
     play_sound('poweron')
 
-SPEAK_IP_CMD = '''
-ifconfig wlan0 |
-grep -o "inet addr:[[:digit:]]\{1,3\}.[[:digit:]]\{1,3\}.[[:digit:]]\{1,3\}.[[:digit:]]\{1,3\}"
-| espeak'''
 
-def speak_ip():
-    subprocess.Popen(SPEAK_IP_CMD, shell=True)
-
-SPEAK_LAST_CAPTURE_CMD = 'ls DCIM -t | head -n 1 | espeak'
-
-def speak_last_capture():
-    subprocess.Popen(SPEAK_LAST_CAPTURE_CMD, shell=True)
-
-CAPTURE_MENU = {
-    'name': 'capture',
+MAIN_MENU = {
+    'name': 'main',
     'sound': 'computerbeep2',
-    1: capture_pic,
+    'eager_first': True,
+    'eager_cleanup': capture.mark_last_rub,
+    1: pic,
     2: start_video,
     3: lambda: switch_menu(MUSIC_MENU),
     4: start_flask,
-    5: speak_ip,
-    6: speak_last_capture,
-    7: lambda: switch_menu(SHUTDOWN_MENU),
-    'eager_first': True,
+    5: lambda: switch_menu(UTILS_MENU)
 }
 
 
+def _mpc_command(*args):
+    subprocess.Popen(('mpc',) + args)
+
 def skip_track():
-    subprocess.Popen(['mpc', 'next'])
+    _mpc_command('next')
 
 def play_pause():
-    subprocess.Popen(['mpc', 'toggle'])
+    _mpc_command('toggle')
+
+def prev_track():
+    _mpc_command('prev')
+
+def volume_up():
+    _mpc_command('volume', '+5')
+
+def volume_down():
+    _mpc_command('volume', '-5')
+
+def toggle_single():
+    _mpc_command('single')
+    subprocess.Popen('mpc | grep -o "single: ..." | espeak', shell=True)
+
+def toggle_random():
+    _mpc_command('random')
+    subprocess.Popen('mpc | grep -o "random: ..." | espeak', shell=True)
 
 MUSIC_MENU = {
     'name': 'music',
     'sound': 'computerbeep3',
     1: skip_track,
     2: play_pause,
-    3: lambda: switch_menu(CAPTURE_MENU),
-    4: start_flask,
+    3: lambda: switch_menu(MAIN_MENU),
+    4: prev_track,
+    5: lambda: switch_menu(MUSIC_MISC_MENU),
+}
+
+MUSIC_MISC_MENU = {
+    'name': 'music',
+    'sound': 'computerbeep1',
+    1: volume_down,
+    2: volume_up,
+    3: lambda: switch_menu(MUSIC_MENU),
+    4: toggle_random,
+    5: toggle_single,
 }
 
 
-def shutdown():
-    play_sound('shutdowninprocess')
+def halt():
+    play_sound('power_down_2')
     subprocess.Popen(['halt'])
 
-SHUTDOWN_MENU = {
-    'name': 'shutdown',
-    'sound': 'shutdowninprocess',
-    'default': lambda: switch_menu(CAPTURE_MENU),
-    3: shutdown,
-}
+def reboot():
+    play_sound('shutdowninprocess')
+    subprocess.Popen(['reboot'])
+
+def delete_rub():
+    capture.delete_rub()
+    play_sound('44')
+
+UTILS_MENU = {
+    'name': 'utils',
+    'sound': 'computerbeep4',
+    1: utils.speak_ip,
+    2: utils.speak_last_capture,
+    3: lambda: switch_menu(MAIN_MENU),
+    4: create_dialog(reboot, {3: halt, 'sound': 'shutdowninprocess'}),
+    5: create_dialog(delete_rub, {'prompt': utils.speak_rub_space}),
+    }
 
 
-current_menu = CAPTURE_MENU
+current_menu = MAIN_MENU
 
 def switch_menu(menu):
     global current_menu
@@ -109,6 +154,9 @@ def exec_menu_option(n, eager=False):
         else:
             if n == 1:
                 return
+            eager_cleanup = current_menu.get('eager_cleanup')
+            if eager_cleanup:
+                eager_cleanup()
     # Otherwise disregard eager calls
     elif eager:
         return

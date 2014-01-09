@@ -3,7 +3,7 @@ from time import sleep, time
 
 from RPi import GPIO
 
-from menus import exec_menu_option
+from menus import exec_menu_option, play_sound
 from web.camconfig import reload_config, register_signal_handlers
 
 GPIO.setmode(GPIO.BOARD)
@@ -54,4 +54,5 @@ def run():
     chdir('/home/pi/skicam')
     reload_config()
     register_signal_handlers()
+    play_sound('welcomefemale')
     poll_toggles()
