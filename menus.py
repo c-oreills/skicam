@@ -55,18 +55,15 @@ def start_flask():
     play_sound('poweron')
 
 
-MAIN_MENU = {
-    'name': 'main',
-    'sound': 'computerbeep2',
-    'eager_first': True,
-    'eager_cleanup': capture.mark_last_rub,
-    1: pic,
-    2: start_video,
-    3: lambda: switch_menu(MUSIC_MENU),
-    4: start_flask,
-    5: lambda: switch_menu(UTILS_MENU)
-}
-
+playlist_n = 0
+def next_playlist():
+    global playlist_n
+    playlists = subprocess.check_output(['mpc', 'lsplaylists']).split('\n')
+    playlists.sort()
+    playlists = filter(None, playlists)
+    subprocess.Popen(['mpc', 'load', playlists[playlist_n]])
+    playlist_n += 1
+    playlist_n %= len(playlists)
 
 def _mpc_command(*args):
     subprocess.Popen(('mpc',) + args)
@@ -94,11 +91,24 @@ def toggle_random():
     _mpc_command('random')
     subprocess.Popen('mpc | grep -o "random: ..." | espeak', shell=True)
 
+MAIN_MENU = {
+    'name': 'main',
+    'sound': 'computerbeep2',
+    'eager_first': True,
+    'eager_cleanup': capture.mark_last_rub,
+    1: pic,
+    2: start_video,
+    3: lambda: switch_menu(MUSIC_MENU),
+    4: play_pause,
+    5: lambda: switch_menu(UTILS_MENU),
+    6: start_flask,
+}
+
 MUSIC_MENU = {
     'name': 'music',
     'sound': 'computerbeep3',
     1: skip_track,
-    2: play_pause,
+    2: next_playlist,
     3: lambda: switch_menu(MAIN_MENU),
     4: prev_track,
     5: lambda: switch_menu(MUSIC_MISC_MENU),
@@ -113,6 +123,7 @@ MUSIC_MISC_MENU = {
     4: toggle_random,
     5: toggle_single,
 }
+
 
 def silence_death():
     import main
@@ -140,7 +151,7 @@ UTILS_MENU = {
     3: lambda: switch_menu(MAIN_MENU),
     4: create_dialog(reboot, {3: halt, 'sound': 'shutdowninprocess'}),
     5: create_dialog(delete_rub, {'prompt': utils.speak_rub_space}),
-    }
+}
 
 
 current_menu = MAIN_MENU
