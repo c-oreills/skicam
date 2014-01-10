@@ -114,12 +114,17 @@ MUSIC_MISC_MENU = {
     5: toggle_single,
 }
 
+def silence_death():
+    import main
+    main.noisy_death = False
 
 def halt():
+    silence_death()
     play_sound('power_down_2')
     subprocess.Popen(['halt'])
 
 def reboot():
+    silence_death()
     play_sound('shutdowninprocess')
     subprocess.Popen(['reboot'])
 

@@ -56,9 +56,15 @@ def poll_toggles():
         last_toggle_time = time()
         poll_sleep()
 
+noisy_death = True
+
 def run():
     chdir('/home/pi/skicam')
     reload_config()
     register_signal_handlers()
     play_sound('welcomefemale')
-    poll_toggles()
+    try:
+        poll_toggles()
+    finally:
+        if noisy_death:
+            play_sound('dive_crash_1')

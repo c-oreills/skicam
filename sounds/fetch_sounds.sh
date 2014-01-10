@@ -13,3 +13,4 @@ wget --no-clobber http://www.freespecialeffects.co.uk/soundfx/computers/power_do
 wget --no-clobber http://www.freespecialeffects.co.uk/soundfx/computers/shutdowninprocess.wav
 wget --no-clobber http://www.freespecialeffects.co.uk/soundfx/cartoon/whizfst2.wav
 wget --no-clobber http://www.freespecialeffects.co.uk/soundfx/weapons/44.wav
+wget --no-clobber http://www.freespecialeffects.co.uk/soundfx/aircraft_misc/dive_crash_1.wav
