@@ -61,7 +61,7 @@ def next_playlist():
     playlists = subprocess.check_output(['mpc', 'lsplaylists']).split('\n')
     playlists.sort()
     playlists = filter(None, playlists)
-    subprocess.Popen(['mpc', 'load', playlists[playlist_n]])
+    subprocess.Popen('mpc clear; mpc load {playlist}; mpc play'.format(playlist=playlists[playlist_n]), shell=True)
     playlist_n += 1
     playlist_n %= len(playlists)
 
