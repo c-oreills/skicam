@@ -1,6 +1,8 @@
 # skicam
 Home made GoPro/MP3 Player using Raspberry Pi and Camera Module.
 
+![Jegg and Bullard jumping](boarding.s.gif?raw=true)
+
 ## Features
 * Photo/Video recording
 * MP3 player with full support for playlists, volume control, skipping and shuffle
