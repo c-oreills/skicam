@@ -1,7 +1,13 @@
 # skicam
 Home made GoPro/MP3 Player using Raspberry Pi and Camera Module.
 
-![Jegg and Bullard jumping](boarding.s.gif?raw=true)
+![Jegg and Bullard get some sick air](readme_imgs/boarding.s.gif?raw=true)
+
+Jegg and Bullard get some sick air
+
+![Duct tape camera to match the duct tape programming](readme_imgs/cammodule.jpg?raw=true)
+
+Duct tape camera to match the duct tape programming
 
 ## Features
 * Photo/Video recording
